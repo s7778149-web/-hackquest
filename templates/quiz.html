@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --green:#00ff9d; --cyan:#00e5ff; --red:#ff2d55; --bg:#020408; --card:#060d14; --border:#0a2a1f; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--green); font-family:'Share Tech Mono',monospace; min-height:100vh; padding:40px 20px; }
+        body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+        .page { position:relative; z-index:1; max-width:600px; margin:0 auto; }
+
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+        .logo { font-family:'Orbitron',monospace; font-size:20px; font-weight:900; letter-spacing:3px; text-shadow:0 0 20px var(--green); }
+        .logo span { color:var(--cyan); }
+        .counter { font-size:13px; color:#446; }
+
+        .progress { background:var(--card); border-radius:20px; height:8px; margin-bottom:28px; border:1px solid var(--border); }
+        .fill { background:linear-gradient(90deg,var(--green),var(--cyan)); height:100%; border-radius:20px; box-shadow:0 0 10px rgba(0,255,157,0.4); transition:width 0.4s; }
+
+        .feedback { padding:12px 18px; border-radius:10px; font-size:14px; font-weight:bold; margin-bottom:20px; text-align:center; }
+        .feedback.correct { background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.4); color:var(--green); }
+        .feedback.wrong   { background:rgba(255,45,85,0.08);  border:1px solid rgba(255,45,85,0.4);  color:var(--red); }
+
+        .explain { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--cyan); border-radius:0 10px 10px 0; padding:12px 16px; font-size:12px; color:#aaa; margin-bottom:20px; line-height:1.7; }
+
+        .qbox { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px; margin-bottom:24px; }
+        .qlabel { font-size:10px; letter-spacing:3px; color:#334; text-transform:uppercase; margin-bottom:12px; }
+        .qtext { font-size:18px; color:#fff; line-height:1.7; }
+
+        .opt {
+            width:100%; text-align:left;
+            background:var(--card); border:1px solid var(--border);
+            border-radius:10px; padding:14px 20px;
+            color:#aaa; font-family:'Share Tech Mono',monospace; font-size:14px;
+            cursor:pointer; margin-bottom:10px; display:block;
+            transition:all 0.2s;
+        }
+        .opt:hover { border-color:rgba(0,255,157,0.5); color:var(--green); background:rgba(0,255,157,0.05); transform:translateX(4px); }
+        .letter { color:#334; margin-right:12px; font-family:'Orbitron',monospace; font-size:12px; }
+
+        .quit-link { display:block; text-align:center; margin-top:20px; font-size:12px; color:#1a3a1a; text-decoration:none; }
+        .quit-link:hover { color:#334; }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span></div>
+        <span class="counter">QUESTION {{ index + 1 }} / {{ total }}</span>
+    </div>
+
+    <div class="progress">
+        <div class="fill" style="width:{{ ((index / total) * 100) | int }}%"></div>
+    </div>
+
+    {% if last_result == "correct" %}
+        <div class="feedback correct">✅ Correct! Well done hacker!</div>
+    {% elif last_result == "wrong" %}
+        <div class="feedback wrong">❌ Wrong answer! Keep going!</div>
+    {% endif %}
+
+    {% if last_explanation %}
+        <div class="explain">💡 {{ last_explanation }}</div>
+    {% endif %}
+
+    <div class="qbox">
+        <div class="qlabel">// question {{ index + 1 }}</div>
+        <p class="qtext">{{ question["question"] }}</p>
+    </div>
+
+    <form method="POST">
+        {% for i in range(question["options"] | length) %}
+        <button type="submit" name="selected" value="{{ i }}" class="opt">
+            <span class="letter">{{ ["A","B","C","D"][i] }}</span>
+            {{ question["options"][i] }}
+        </button>
+        {% endfor %}
+    </form>
+
+    <a href="/dashboard" class="quit-link">← quit quiz</a>
+
+</div>
+</body>
+</html>

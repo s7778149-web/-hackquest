@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Dictionary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --green:#00ff9d; --cyan:#00e5ff; --red:#ff2d55; --yellow:#ffd60a; --bg:#020408; --card:#060d14; --border:#0a2a1f; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--green); font-family:'Share Tech Mono',monospace; padding:32px 24px; }
+        body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+        .wrapper { position:relative; z-index:1; max-width:860px; margin:0 auto; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:36px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+        .logo { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:3px; text-shadow:0 0 20px var(--green); }
+        .logo span { color:var(--cyan); }
+        .btn { padding:10px 20px; border-radius:8px; text-decoration:none; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); color:var(--green); transition:all 0.2s; }
+        h2 { font-family:'Orbitron',monospace; font-size:22px; color:#fff; margin-bottom:8px; }
+        .sub { color:#334; font-size:13px; margin-bottom:28px; }
+        .search-wrap { position:relative; margin-bottom:20px; }
+        .search-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:16px; }
+        #searchInput { width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px 14px 46px; color:var(--green); font-family:'Share Tech Mono',monospace; font-size:14px; outline:none; transition:border-color 0.2s; }
+        #searchInput:focus { border-color:rgba(0,255,157,0.5); }
+        #searchInput::placeholder { color:#1a3a1a; }
+        .result-count { font-size:11px; color:#334; margin-bottom:20px; }
+        .alpha-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
+        .alpha-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer; font-size:12px; border:1px solid var(--border); color:#334; background:var(--card); transition:all 0.2s; font-family:'Share Tech Mono',monospace; }
+        .alpha-btn:hover, .alpha-btn.active { color:var(--green); border-color:rgba(0,255,157,0.4); background:rgba(0,255,157,0.08); }
+        .terms-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+        .term-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; transition:all 0.2s; cursor:pointer; }
+        .term-card:hover { border-color:rgba(0,255,157,0.3); transform:translateY(-2px); }
+        .term-card.expanded { border-color:rgba(0,229,255,0.4); background:#060d18; }
+        .term-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+        .term-name { font-family:'Orbitron',monospace; font-size:14px; color:#fff; font-weight:700; }
+        .term-cat { font-size:10px; padding:2px 8px; border-radius:20px; }
+        .cat-web     { color:#00ff9d; background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.2); }
+        .cat-crypto  { color:#ffd60a; background:rgba(255,214,10,0.1); border:1px solid rgba(255,214,10,0.2); }
+        .cat-network { color:#00e5ff; background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.2); }
+        .cat-attack  { color:#ff2d55; background:rgba(255,45,85,0.1); border:1px solid rgba(255,45,85,0.2); }
+        .cat-tool    { color:#aa88ff; background:rgba(170,136,255,0.1); border:1px solid rgba(170,136,255,0.2); }
+        .cat-concept { color:#aaa; background:rgba(170,170,170,0.1); border:1px solid rgba(170,170,170,0.2); }
+        .term-short { color:#446; font-size:12px; line-height:1.6; }
+        .term-full { display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+        .term-card.expanded .term-full { display:block; }
+        .term-full-def { color:#aaa; font-size:13px; line-height:1.8; margin-bottom:12px; }
+        .term-example { background:rgba(0,0,0,0.3); border-left:2px solid var(--cyan); border-radius:0 8px 8px 0; padding:10px 14px; font-size:12px; color:#446; }
+        .no-results { text-align:center; padding:60px; color:#334; font-size:14px; display:none; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span></div>
+        <a href="/dashboard" class="btn">← Dashboard</a>
+    </div>
+    <h2>📖 HACKING DICTIONARY</h2>
+    <p class="sub">// search any cybersecurity term · click to expand</p>
+    <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search: XSS, firewall, encryption..." oninput="filterTerms()">
+    </div>
+    <div class="alpha-tabs" id="alphaTabs"></div>
+    <div class="result-count" id="resultCount"></div>
+    <div class="terms-grid" id="termsGrid"></div>
+    <div class="no-results" id="noResults">No terms found. Try a different search!</div>
+</div>
+<script>
+var terms = [
+    {name:"AES",cat:"crypto",catLabel:"Cryptography",short:"Advanced Encryption Standard — symmetric block cipher",full:"AES is a symmetric encryption algorithm adopted as a standard by the US government. It supports 128, 192, and 256-bit keys. Used in HTTPS, WPA2, VPNs, and file encryption.",example:"AES-256 encrypts your hard drive in BitLocker and FileVault"},
+    {name:"ARP Spoofing",cat:"attack",catLabel:"Attack",short:"Fake ARP messages to intercept network traffic",full:"An attacker sends forged ARP replies to associate their MAC address with a legitimate IP, allowing them to intercept, modify, or stop data in transit.",example:"Attacker maps gateway IP to their MAC, becoming the man-in-the-middle"},
+    {name:"Backdoor",cat:"attack",catLabel:"Attack",short:"Hidden method to bypass normal authentication",full:"A hidden entry point into a system that bypasses normal security controls. Can be intentionally placed by developers or installed by malware to maintain persistent access.",example:"A RAT installs a backdoor on victims PC for remote control"},
+    {name:"Base64",cat:"crypto",catLabel:"Cryptography",short:"Encoding scheme — NOT encryption!",full:"A binary-to-text encoding scheme that represents data in ASCII format. Very important: Base64 is NOT encryption — it can be decoded by anyone instantly with no key.",example:"Hello World becomes SGVsbG8gV29ybGQ= and is easily reversed"},
+    {name:"Botnet",cat:"attack",catLabel:"Attack",short:"Network of infected computers controlled remotely",full:"A collection of internet-connected devices infected with malware and controlled by a hacker. Used for DDoS attacks, spam campaigns, and cryptocurrency mining.",example:"Mirai botnet used 600000 IoT devices to DDoS major websites"},
+    {name:"Brute Force",cat:"attack",catLabel:"Attack",short:"Try all possible combinations until success",full:"A trial-and-error method to decode encrypted data or passwords by systematically checking all possible combinations. Slow but guaranteed to work eventually.",example:"Trying passwords: a, b... password, password1, p@ssw0rd"},
+    {name:"Buffer Overflow",cat:"attack",catLabel:"Attack",short:"Writing beyond memory buffer boundaries",full:"A vulnerability where a program writes more data to a buffer than it can hold, overwriting adjacent memory. Can allow attackers to execute arbitrary code with elevated privileges.",example:"Classic exploit: stack overflow overwrites return address with shellcode"},
+    {name:"Burp Suite",cat:"tool",catLabel:"Tool",short:"Web security testing platform",full:"An integrated platform for web application security testing. The proxy intercepts browser traffic for analysis and modification. Used by bug bounty hunters and penetration testers worldwide.",example:"Intercept login request, modify username field, test for SQL injection"},
+    {name:"CSRF",cat:"web",catLabel:"Web Security",short:"Cross-Site Request Forgery attack",full:"An attack that tricks an authenticated user into unknowingly executing malicious actions on a web application. Exploits the trust a site has in the users browser session.",example:"Hidden form on evil.com triggers bank transfer using victims session"},
+    {name:"CVE",cat:"concept",catLabel:"Concept",short:"Common Vulnerabilities and Exposures identifier",full:"A standardized reference system for publicly known cybersecurity vulnerabilities. Each vulnerability gets a unique CVE ID for tracking and reference across organizations.",example:"CVE-2021-44228 is the infamous Log4Shell vulnerability"},
+    {name:"DDoS",cat:"attack",catLabel:"Attack",short:"Distributed Denial of Service attack",full:"An attack that overwhelms a target server with massive traffic from multiple sources simultaneously, making it unavailable to legitimate users.",example:"100000 bots send requests simultaneously, server crashes under load"},
+    {name:"Encryption",cat:"crypto",catLabel:"Cryptography",short:"Converting data into unreadable format",full:"The process of converting readable data into an unreadable format using an algorithm and key. Only those with the correct key can decrypt it.",example:"HTTPS encrypts web traffic so ISPs cannot read your messages"},
+    {name:"Exploit",cat:"concept",catLabel:"Concept",short:"Code that takes advantage of a vulnerability",full:"A piece of software or sequence of commands that takes advantage of a vulnerability to cause unintended behavior in software or hardware.",example:"EternalBlue exploit used MS17-010 vulnerability to spread WannaCry"},
+    {name:"Firewall",cat:"network",catLabel:"Networking",short:"Network traffic filtering system",full:"A security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules. Acts as a barrier between trusted and untrusted networks.",example:"Block all traffic except port 80 HTTP and 443 HTTPS"},
+    {name:"Hash Function",cat:"crypto",catLabel:"Cryptography",short:"One-way function producing fixed-length output",full:"A mathematical function that converts input data of any size into a fixed-size output called a hash. One-way — you cannot reverse a hash to get the original data.",example:"SHA-256 of password gives ef92b778bafe771e89245b89ecbc08a44a4e166c"},
+    {name:"IDS/IPS",cat:"network",catLabel:"Networking",short:"Intrusion Detection and Prevention System",full:"IDS monitors network traffic for suspicious activity and alerts administrators. IPS takes it further by actively blocking detected threats in real-time.",example:"Snort is a popular open-source IDS/IPS used in enterprise networks"},
+    {name:"JWT",cat:"web",catLabel:"Web Security",short:"JSON Web Token for authentication",full:"A compact self-contained token for transmitting information between parties as JSON. Contains header, payload, and signature. Vulnerable to algorithm confusion attacks.",example:"eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.signature"},
+    {name:"Kali Linux",cat:"tool",catLabel:"Tool",short:"Penetration testing Linux distribution",full:"A Debian-based Linux distribution designed for digital forensics and penetration testing. Comes pre-installed with 600+ security tools. Standard OS for ethical hackers.",example:"Boot from USB, use Nmap, Metasploit, and Burp Suite out of the box"},
+    {name:"Keylogger",cat:"attack",catLabel:"Attack",short:"Records all keystrokes on a device",full:"Software or hardware that records every keystroke on a device without the users knowledge. Used to steal passwords, credit card numbers, and other sensitive data.",example:"Malware sends typed passwords directly to attackers email"},
+    {name:"Man-in-the-Middle",cat:"attack",catLabel:"Attack",short:"Attacker secretly intercepts communication",full:"An attack where the attacker secretly relays and potentially alters communication between two parties who believe they are communicating directly with each other.",example:"Public WiFi attacker intercepts HTTPS traffic to steal login cookies"},
+    {name:"Metasploit",cat:"tool",catLabel:"Tool",short:"World's most popular exploitation framework",full:"An advanced open-source platform for developing, testing, and executing exploits. Contains hundreds of exploits, payloads, and auxiliary modules. Standard tool for penetration testers.",example:"use exploit/windows/smb/ms17_010_eternalblue; set RHOSTS target; run"},
+    {name:"Nmap",cat:"tool",catLabel:"Tool",short:"Network discovery and port scanner",full:"The most popular network scanning tool. Discovers hosts, open ports, services, OS versions, and vulnerabilities on a network. Essential for reconnaissance in penetration testing.",example:"nmap -sV -O -A 192.168.1.0/24 scans entire local network with details"},
+    {name:"OWASP",cat:"concept",catLabel:"Concept",short:"Open Web Application Security Project",full:"A nonprofit foundation that works to improve software security. Famous for the OWASP Top 10 — a standard awareness document for web application security risks.",example:"OWASP Top 10 includes SQLi, XSS, Broken Auth, SSRF, and more"},
+    {name:"Payload",cat:"concept",catLabel:"Concept",short:"Malicious code executed after exploitation",full:"In cybersecurity, a payload is the part of an exploit that performs the actual malicious action like opening a shell, installing malware, or deleting files.",example:"Meterpreter is Metasploit advanced in-memory payload for remote control"},
+    {name:"Phishing",cat:"attack",catLabel:"Attack",short:"Fraudulent communications to steal information",full:"A social engineering attack using deceptive emails or websites that impersonate trusted entities to steal credentials, financial information, or install malware.",example:"Fake Your account is suspended email links to spoofed login page"},
+    {name:"Port",cat:"network",catLabel:"Networking",short:"Virtual communication endpoint 0 to 65535",full:"A virtual point where network connections start and end. Ports 0-1023 are well-known. HTTP uses 80, HTTPS uses 443, SSH uses 22, FTP uses 21.",example:"Open port 22 means SSH is running — target for brute force attacks"},
+    {name:"Privilege Escalation",cat:"attack",catLabel:"Attack",short:"Gaining higher access than authorized",full:"The act of exploiting a vulnerability to gain elevated access to resources normally protected from the user. Vertical means user to admin. Horizontal means access other users data.",example:"Exploit sudo vulnerability to go from www-data to root on Linux"},
+    {name:"Ransomware",cat:"attack",catLabel:"Attack",short:"Encrypts files and demands payment",full:"Malicious software that encrypts a victim files and demands payment usually cryptocurrency for the decryption key. Has cost organizations billions of dollars globally.",example:"WannaCry, REvil, LockBit encrypted hospitals, pipelines, and governments"},
+    {name:"Reconnaissance",cat:"concept",catLabel:"Concept",short:"First phase of hacking — information gathering",full:"The first phase of penetration testing where attackers gather as much information as possible about the target. Includes passive recon using OSINT and active recon using scanning.",example:"Google dorking, Shodan, WHOIS, LinkedIn enumeration, Nmap scans"},
+    {name:"RSA",cat:"crypto",catLabel:"Cryptography",short:"Asymmetric encryption using prime factoring",full:"A public-key cryptographic algorithm based on the mathematical difficulty of factoring large numbers. Uses key pairs: public key encrypts, private key decrypts.",example:"2048-bit RSA used in HTTPS certificates and digital signatures"},
+    {name:"Social Engineering",cat:"attack",catLabel:"Attack",short:"Manipulating people instead of systems",full:"Psychological manipulation of people into performing actions or revealing confidential information. Exploits human psychology rather than technical vulnerabilities.",example:"Calling IT support pretending to be an employee to reset password"},
+    {name:"SQL Injection",cat:"web",catLabel:"Web Security",short:"Injecting SQL code into queries",full:"An attack where malicious SQL statements are inserted into entry fields, allowing attackers to view, modify, or delete database data, or bypass authentication.",example:"Single quote OR 1 equals 1 in password field bypasses login"},
+    {name:"SSL/TLS",cat:"network",catLabel:"Networking",short:"Cryptographic protocol securing internet communications",full:"Protocols that provide encrypted communication over networks. TLS is the modern successor to SSL. Used in HTTPS, email, VoIP. Protects data in transit from eavesdropping.",example:"The padlock icon in your browser means TLS is encrypting the connection"},
+    {name:"Trojan",cat:"attack",catLabel:"Attack",short:"Malware disguised as legitimate software",full:"Malicious code hidden inside what appears to be legitimate software. Unlike viruses, Trojans do not replicate. They provide attackers backdoor access or steal data.",example:"Fake game crack actually installs remote access trojan"},
+    {name:"Two-Factor Auth",cat:"concept",catLabel:"Concept",short:"Second verification beyond password",full:"An authentication method requiring two different forms of verification: something you know like a password plus something you have like a phone or something you are like a fingerprint.",example:"Enter password plus 6-digit code from Google Authenticator app"},
+    {name:"VPN",cat:"network",catLabel:"Networking",short:"Virtual Private Network — encrypted tunnel",full:"Creates an encrypted tunnel between your device and a VPN server, masking your IP address and encrypting all traffic. Used for privacy and securing public WiFi.",example:"Corporate employees use VPN to securely access internal systems remotely"},
+    {name:"Vulnerability",cat:"concept",catLabel:"Concept",short:"Weakness that can be exploited",full:"A weakness or flaw in a system that could be exploited by a threat actor to gain unauthorized access or cause harm. Different from a bug — a bug becomes a vulnerability when exploitable.",example:"Unpatched Log4j library is a critical vulnerability in thousands of systems"},
+    {name:"Wireshark",cat:"tool",catLabel:"Tool",short:"Network packet analyzer",full:"A free open-source packet capture and analysis tool. Captures all network traffic on an interface in real time. Essential for network troubleshooting and security analysis.",example:"Capture HTTP traffic and read plain-text passwords from POST requests"},
+    {name:"XSS",cat:"web",catLabel:"Web Security",short:"Cross-Site Scripting — injecting JavaScript",full:"An attack where malicious JavaScript is injected into web pages viewed by other users. Allows cookie theft, session hijacking, keylogging, and malware distribution.",example:"Script tag with document.cookie sent to attackers server"},
+    {name:"Zero-Day",cat:"concept",catLabel:"Concept",short:"Unknown vulnerability with no patch",full:"A previously unknown software vulnerability that the vendor has had zero days to address. Extremely valuable to hackers and governments. Sold for millions on black markets.",example:"Stuxnet used 4 zero-days simultaneously to destroy Iranian nuclear centrifuges"}
+];
+
+var filtered = terms.slice();
+var activeLetter = 'all';
+
+var letters = ['all'];
+var seen = {};
+terms.forEach(function(t) {
+    var l = t.name[0].toUpperCase();
+    if (!seen[l]) { seen[l] = true; letters.push(l); }
+});
+letters.sort(function(a,b) { return a === 'all' ? -1 : a.localeCompare(b); });
+
+var alphaDiv = document.getElementById('alphaTabs');
+letters.forEach(function(l) {
+    var btn = document.createElement('div');
+    btn.className = 'alpha-btn' + (l==='all' ? ' active' : '');
+    btn.textContent = l === 'all' ? 'All' : l;
+    btn.onclick = function() {
+        activeLetter = l;
+        document.querySelectorAll('.alpha-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        filterTerms();
+    };
+    alphaDiv.appendChild(btn);
+});
+
+function filterTerms() {
+    var q = document.getElementById('searchInput').value.toLowerCase();
+    filtered = terms.filter(function(t) {
+        var matchSearch = !q || t.name.toLowerCase().indexOf(q) > -1 || t.short.toLowerCase().indexOf(q) > -1 || t.full.toLowerCase().indexOf(q) > -1;
+        var matchLetter = activeLetter === 'all' || t.name[0].toUpperCase() === activeLetter;
+        return matchSearch && matchLetter;
+    });
+    renderTerms();
+}
+
+function renderTerms() {
+    var grid = document.getElementById('termsGrid');
+    var noRes = document.getElementById('noResults');
+    document.getElementById('resultCount').textContent = '// showing ' + filtered.length + ' of ' + terms.length + ' terms';
+    if (!filtered.length) { grid.innerHTML = ''; noRes.style.display = 'block'; return; }
+    noRes.style.display = 'none';
+    grid.innerHTML = filtered.map(function(t, i) {
+        return '<div class="term-card" onclick="toggleTerm(this)" style="animation-delay:' + (i*0.03) + 's">' +
+            '<div class="term-header">' +
+            '<div class="term-name">' + t.name + '</div>' +
+            '<span class="term-cat cat-' + t.cat + '">' + t.catLabel + '</span>' +
+            '</div>' +
+            '<div class="term-short">' + t.short + '</div>' +
+            '<div class="term-full">' +
+            '<div class="term-full-def">' + t.full + '</div>' +
+            '<div class="term-example">💡 ' + t.example + '</div>' +
+            '</div></div>';
+    }).join('');
+}
+
+function toggleTerm(el) {
+    el.classList.toggle('expanded');
+}
+
+renderTerms();
+</script>
+</body>
+</html>
+```
+
+---
+
+## Steps:
+```
+1. Open flashcards.html → Ctrl+A → Delete → Paste → Ctrl+S
+2. Open dictionary.html → Ctrl+A → Delete → Paste → Ctrl+S
+3. Restart Flask: python app.py
+4. Refresh browser

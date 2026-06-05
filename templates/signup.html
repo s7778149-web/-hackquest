@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Sign Up</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0f;
+            color: #00ff9d;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .box {
+            background: #0d0d1a;
+            border: 1px solid #1a1a3a;
+            border-radius: 12px;
+            padding: 40px;
+            width: 360px;
+            text-align: center;
+        }
+
+        h1 { font-size: 32px; letter-spacing: 4px; margin-bottom: 8px; }
+        .blue { color: #00ccff; }
+        .sub { color: #555; font-size: 13px; margin-bottom: 24px; }
+
+        input {
+            width: 100%;
+            background: #0a0a14;
+            border: 1px solid #1a1a3a;
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: #00ff9d;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 12px;
+            outline: none;
+            display: block;
+        }
+
+        input:focus { border-color: #00ff9d; }
+
+        button {
+            width: 100%;
+            background: #00ff9d22;
+            border: 1px solid #00ff9d;
+            border-radius: 8px;
+            padding: 12px;
+            color: #00ff9d;
+            font-family: monospace;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        button:hover { background: #00ff9d44; }
+
+        .error {
+            background: #ff446622;
+            border: 1px solid #ff4466;
+            border-radius: 8px;
+            padding: 10px;
+            color: #ff4466;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .link { color: #555; font-size: 13px; margin-top: 20px; }
+        .link a { color: #00ccff; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h1>HACK<span class="blue">QUEST</span></h1>
+    <p class="sub">Create your hacker account 🔐</p>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <input type="text"     name="username" placeholder="Choose Username" required />
+        <input type="password" name="password" placeholder="Choose Password" required />
+        <input type="password" name="confirm"  placeholder="Confirm Password" required />
+        <button type="submit">Create Account →</button>
+    </form>
+
+    <p class="link">Already have account? <a href="/login">Login here</a></p>
+</div>
+</body>
+</html>

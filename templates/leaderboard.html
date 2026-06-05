@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Leaderboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0f; color: #00ff9d; font-family: monospace; padding: 32px 20px; }
+        .page { max-width: 700px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+        .header h2 { font-size: 22px; color: #fff; }
+        .btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-family: monospace; font-weight: bold; font-size: 13px; background: #00ff9d22; border: 1px solid #00ff9d; color: #00ff9d; }
+        .card { background: #0d0d1a; border: 1px solid #1a1a3a; border-radius: 12px; overflow: hidden; }
+        .col-head { display: grid; grid-template-columns: 60px 1fr 120px 100px; padding: 12px 20px; border-bottom: 1px solid #1a1a3a; }
+        .col-head span { font-size: 11px; color: #555; font-weight: bold; letter-spacing: 1px; }
+        .row { display: grid; grid-template-columns: 60px 1fr 120px 100px; padding: 16px 20px; border-bottom: 1px solid #0f0f1f; align-items: center; transition: background 0.2s; }
+        .row:hover { background: #ffffff05; }
+        .row.me { background: #00ff9d08; border-left: 3px solid #00ff9d; }
+        .rank { font-size: 20px; }
+        .name { font-weight: 700; font-size: 14px; color: #fff; }
+        .name.me { color: #00ff9d; }
+        .you-tag { font-size: 10px; background: #00ff9d22; border: 1px solid #00ff9d44; color: #00ff9d; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+        .xp-val { color: #00ccff; font-weight: bold; }
+        .solved-val { color: #aaa; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <h2>🏆 Global Leaderboard</h2>
+        <a href="/dashboard" class="btn">🏠 Dashboard</a>
+    </div>
+
+    <div class="card">
+        <div class="col-head">
+            <span>RANK</span>
+            <span>HACKER</span>
+            <span>XP</span>
+            <span>SOLVED</span>
+        </div>
+        {% for p in players %}
+        <div class="row {% if p.name == current_user %}me{% endif %}">
+            <div class="rank">
+                {% if loop.index == 1 %}🥇
+                {% elif loop.index == 2 %}🥈
+                {% elif loop.index == 3 %}🥉
+                {% else %}#{{ loop.index }}
+                {% endif %}
+            </div>
+            <div>
+                <span class="name {% if p.name == current_user %}me{% endif %}">
+                    {{ p.name }}
+                </span>
+                {% if p.name == current_user %}
+                    <span class="you-tag">YOU</span>
+                {% endif %}
+            </div>
+            <div class="xp-val">⚡ {{ p.xp }}</div>
+            <div class="solved-val">🧩 {{ p.solved }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>

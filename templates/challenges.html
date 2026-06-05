@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Challenges</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --green:#00ff9d; --cyan:#00e5ff; --red:#ff2d55; --yellow:#ffd60a; --bg:#020408; --card:#060d14; --border:#0a2a1f; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--green); font-family:'Share Tech Mono',monospace; padding:32px 24px; }
+        body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+        .wrapper { position:relative; z-index:1; max-width:980px; margin:0 auto; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+        .logo { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:3px; text-shadow:0 0 20px var(--green); }
+        .logo span { color:var(--cyan); }
+        .btn { padding:10px 20px; border-radius:8px; text-decoration:none; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); color:var(--green); transition:all 0.2s; }
+        .btn:hover { background:rgba(0,255,157,0.2); }
+        h2 { font-family:'Orbitron',monospace; font-size:20px; color:#fff; margin-bottom:6px; }
+        .sub { color:#334; font-size:12px; margin-bottom:24px; }
+
+        /* filters */
+        .filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px; }
+        .filter-btn { padding:7px 16px; border-radius:20px; font-family:'Share Tech Mono',monospace; font-size:12px; cursor:pointer; text-decoration:none; border:1px solid #0a2a1f; color:#446; background:var(--card); transition:all 0.2s; }
+        .filter-btn:hover, .filter-btn.active { color:var(--green); border-color:rgba(0,255,157,0.4); background:rgba(0,255,157,0.08); }
+        .filter-sep { width:1px; background:#0a2a1f; margin:0 4px; }
+
+        /* grid */
+        .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+        .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:22px; text-decoration:none; display:block; transition:all 0.25s; position:relative; overflow:hidden; animation:fadeUp 0.5s ease both; }
+        .card:hover { border-color:rgba(0,255,157,0.5); transform:translateY(-4px); box-shadow:0 8px 30px rgba(0,255,157,0.08); }
+        .card.solved { border-color:rgba(0,255,157,0.25); }
+        .card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--accent,#00ff9d),transparent); opacity:0; transition:opacity 0.3s; }
+        .card:hover::before { opacity:1; }
+        .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+        .icon { font-size:34px; }
+        .solved-badge { font-size:10px; font-weight:bold; color:var(--green); background:rgba(0,255,157,0.15); border:1px solid rgba(0,255,157,0.3); border-radius:20px; padding:3px 10px; }
+        .card-title { color:#fff; font-weight:700; font-size:14px; margin-bottom:4px; font-family:'Orbitron',monospace; letter-spacing:0.5px; }
+        .card-cat { color:#334; font-size:11px; margin-bottom:16px; }
+        .card-bottom { display:flex; justify-content:space-between; align-items:center; }
+        .xp { color:var(--cyan); font-size:12px; font-weight:bold; }
+        .diff { font-size:10px; font-weight:bold; padding:3px 10px; border-radius:20px; }
+        .easy   { color:#00ff9d; background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); }
+        .medium { color:#ffd60a; background:rgba(255,214,10,0.1); border:1px solid rgba(255,214,10,0.3); }
+        .hard   { color:#ff2d55; background:rgba(255,45,85,0.1);  border:1px solid rgba(255,45,85,0.3); }
+        .empty { text-align:center; padding:60px; color:#334; font-size:14px; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span></div>
+        <a href="/dashboard" class="btn">← Dashboard</a>
+    </div>
+
+    <h2>🧩 CHALLENGES</h2>
+    <p class="sub">// capture the flag · earn xp · level up</p>
+
+    <!-- FILTERS -->
+    <div class="filters">
+        <a href="/challenges" class="filter-btn {% if cat=='all' and diff=='all' %}active{% endif %}">All</a>
+        <div class="filter-sep"></div>
+        <a href="/challenges?cat=Web+Hacking&diff={{ diff }}" class="filter-btn {% if cat=='Web Hacking' %}active{% endif %}">🌐 Web</a>
+        <a href="/challenges?cat=Cryptography&diff={{ diff }}" class="filter-btn {% if cat=='Cryptography' %}active{% endif %}">🔐 Crypto</a>
+        <a href="/challenges?cat=Network&diff={{ diff }}" class="filter-btn {% if cat=='Network' %}active{% endif %}">🌍 Network</a>
+        <a href="/challenges?cat=Forensics&diff={{ diff }}" class="filter-btn {% if cat=='Forensics' %}active{% endif %}">🔍 Forensics</a>
+        <a href="/challenges?cat=Linux&diff={{ diff }}" class="filter-btn {% if cat=='Linux' %}active{% endif %}">🐧 Linux</a>
+        <div class="filter-sep"></div>
+        <a href="/challenges?cat={{ cat }}&diff=Easy" class="filter-btn {% if diff=='Easy' %}active{% endif %}">🟢 Easy</a>
+        <a href="/challenges?cat={{ cat }}&diff=Medium" class="filter-btn {% if diff=='Medium' %}active{% endif %}">🟡 Medium</a>
+        <a href="/challenges?cat={{ cat }}&diff=Hard" class="filter-btn {% if diff=='Hard' %}active{% endif %}">🔴 Hard</a>
+    </div>
+
+    {% if challenges %}
+    <div class="grid">
+    {% for c in challenges %}
+        <a href="/challenges/{{ c.id }}" class="card {% if c.id in user_solved %}solved{% endif %}"
+           style="--accent:{% if c.difficulty=='Easy' %}#00ff9d{% elif c.difficulty=='Medium' %}#ffd60a{% else %}#ff2d55{% endif %}">
+            <div class="card-top">
+                <span class="icon">{{ c.icon }}</span>
+                {% if c.id in user_solved %}<span class="solved-badge">✅ SOLVED</span>{% endif %}
+            </div>
+            <div class="card-title">{{ c.title }}</div>
+            <div class="card-cat">{{ c.category }}</div>
+            <div class="card-bottom">
+                <span class="diff {{ c.difficulty|lower }}">{{ c.difficulty }}</span>
+                <span class="xp">⚡ {{ c.xp }} XP</span>
+            </div>
+        </a>
+    {% endfor %}
+    </div>
+    {% else %}
+        <div class="empty">No challenges found for this filter.<br><a href="/challenges" style="color:var(--green)">Clear filters →</a></div>
+    {% endif %}
+</div>
+</body>
+</html>

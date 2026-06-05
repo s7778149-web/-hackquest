@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Certificate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#020408; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:32px 20px; font-family:'Share Tech Mono',monospace; }
+
+        .controls { display:flex; gap:12px; margin-bottom:28px; }
+        .ctrl-btn { padding:10px 24px; border-radius:8px; cursor:pointer; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; transition:all 0.2s; text-decoration:none; }
+        .btn-back  { background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); color:#00ff9d; }
+        .btn-print { background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); color:#00e5ff; }
+        .btn-print:hover { background:rgba(0,229,255,0.2); }
+
+        /* CERTIFICATE */
+        .cert-wrapper {
+            width:900px; max-width:100%;
+            background:#050a0d;
+            border:2px solid #1a3a2a;
+            border-radius:4px;
+            padding:3px;
+            box-shadow:0 0 60px rgba(0,255,157,0.1), 0 0 120px rgba(0,0,0,0.8);
+        }
+
+        .cert {
+            background:linear-gradient(145deg, #050d08 0%, #020408 50%, #050d08 100%);
+            border:1px solid #0a2a1f;
+            border-radius:2px;
+            padding:56px 64px;
+            position:relative;
+            overflow:hidden;
+            min-height:580px;
+        }
+
+        /* background decoration */
+        .cert::before {
+            content:'';
+            position:absolute; inset:0;
+            background-image:
+                linear-gradient(rgba(0,255,157,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,157,0.015) 1px, transparent 1px);
+            background-size:30px 30px;
+        }
+
+        /* corner ornaments */
+        .corner { position:absolute; width:80px; height:80px; }
+        .corner.tl { top:20px; left:20px; border-top:2px solid rgba(0,255,157,0.4); border-left:2px solid rgba(0,255,157,0.4); }
+        .corner.tr { top:20px; right:20px; border-top:2px solid rgba(0,255,157,0.4); border-right:2px solid rgba(0,255,157,0.4); }
+        .corner.bl { bottom:20px; left:20px; border-bottom:2px solid rgba(0,255,157,0.4); border-left:2px solid rgba(0,255,157,0.4); }
+        .corner.br { bottom:20px; right:20px; border-bottom:2px solid rgba(0,255,157,0.4); border-right:2px solid rgba(0,255,157,0.4); }
+
+        /* watermark */
+        .watermark {
+            position:absolute; inset:0;
+            display:flex; align-items:center; justify-content:center;
+            font-family:'Orbitron',monospace; font-size:120px; font-weight:900;
+            color:rgba(0,255,157,0.02); letter-spacing:10px; pointer-events:none;
+            transform:rotate(-20deg);
+        }
+
+        .cert-inner { position:relative; z-index:1; text-align:center; }
+
+        .cert-org { font-family:'Orbitron',monospace; font-size:13px; letter-spacing:4px; color:rgba(0,255,157,0.6); margin-bottom:8px; }
+        .cert-divider { width:60px; height:1px; background:linear-gradient(90deg,transparent,#00ff9d,transparent); margin:0 auto 24px; }
+
+        .cert-title { font-family:'Orbitron',monospace; font-size:36px; font-weight:900; color:#fff; letter-spacing:3px; margin-bottom:6px; text-shadow:0 0 30px rgba(0,255,157,0.3); }
+        .cert-subtitle { font-family:'Crimson Text',serif; font-size:18px; color:rgba(0,255,157,0.5); font-style:italic; margin-bottom:36px; }
+
+        .cert-presented { font-family:'Crimson Text',serif; font-size:16px; color:#446; margin-bottom:8px; }
+        .cert-name { font-family:'Orbitron',monospace; font-size:42px; font-weight:900; color:#00ff9d; margin-bottom:4px; text-shadow:0 0 20px rgba(0,255,157,0.5); letter-spacing:2px; }
+        .cert-username { font-family:'Share Tech Mono',monospace; font-size:14px; color:rgba(0,229,255,0.6); margin-bottom:32px; }
+
+        .cert-body { font-family:'Crimson Text',serif; font-size:17px; color:#667; line-height:1.8; max-width:600px; margin:0 auto 36px; }
+        .cert-body strong { color:#aaa; }
+
+        /* stats row */
+        .cert-stats { display:flex; justify-content:center; gap:0; margin-bottom:40px; }
+        .cert-stat { padding:16px 32px; border:1px solid #0a2a1f; }
+        .cert-stat:first-child { border-radius:8px 0 0 8px; }
+        .cert-stat:last-child  { border-radius:0 8px 8px 0; }
+        .cert-stat-val { font-family:'Orbitron',monospace; font-size:24px; font-weight:900; color:#00ff9d; }
+        .cert-stat-label { font-size:10px; color:#334; letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+
+        /* badges */
+        .cert-badges { display:flex; justify-content:center; gap:10px; margin-bottom:40px; flex-wrap:wrap; }
+        .cert-badge { font-size:12px; padding:5px 16px; border-radius:20px; color:#00ff9d; background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); }
+
+        .cert-divider2 { width:200px; height:1px; background:linear-gradient(90deg,transparent,#1a3a2a,transparent); margin:0 auto 28px; }
+
+        .cert-footer { display:flex; justify-content:space-between; align-items:flex-end; }
+        .cert-sign { text-align:center; }
+        .cert-sign-line { width:120px; height:1px; background:#0a2a1f; margin:0 auto 6px; }
+        .cert-sign-name { font-family:'Orbitron',monospace; font-size:11px; color:#334; letter-spacing:1px; }
+        .cert-sign-title { font-size:10px; color:#1a3a1a; }
+        .cert-seal { width:80px; height:80px; border-radius:50%; border:2px solid rgba(0,255,157,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,255,157,0.05); }
+        .cert-seal-icon { font-size:28px; }
+        .cert-seal-text { font-size:8px; color:rgba(0,255,157,0.4); letter-spacing:1px; margin-top:2px; }
+        .cert-date { font-size:12px; color:#334; margin-top:6px; }
+
+        @media print {
+            body { background:#fff; padding:0; }
+            .controls { display:none; }
+            .cert-wrapper { box-shadow:none; border-color:#ccc; width:100%; }
+            .cert { background:#fff; }
+            .cert-title { color:#000; }
+            .cert-name { color:#006633; }
+            .watermark { color:rgba(0,100,50,0.04); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <a href="/dashboard" class="ctrl-btn btn-back">← Dashboard</a>
+    <button class="ctrl-btn btn-print" onclick="window.print()">🖨️ Save as PDF</button>
+</div>
+
+<div class="cert-wrapper">
+    <div class="cert">
+        <!-- corners -->
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <!-- watermark -->
+        <div class="watermark">HACKQUEST</div>
+
+        <div class="cert-inner">
+            <div class="cert-org">HACKQUEST CYBERSECURITY ACADEMY</div>
+            <div class="cert-divider"></div>
+
+            <div class="cert-title">CERTIFICATE</div>
+            <div class="cert-subtitle">of Achievement in Cybersecurity</div>
+
+            <div class="cert-presented">This certificate is proudly presented to</div>
+            <div class="cert-name">{{ username }}</div>
+            <div class="cert-username">// @{{ username }} · Level {{ level }} Hacker</div>
+
+            <div class="cert-body">
+                for successfully demonstrating knowledge and skill in
+                <strong>ethical hacking, cybersecurity concepts, and CTF challenges</strong>
+                through the HackQuest learning platform.
+            </div>
+
+            <div class="cert-stats">
+                <div class="cert-stat">
+                    <div class="cert-stat-val">{{ xp }}</div>
+                    <div class="cert-stat-label">XP Earned</div>
+                </div>
+                <div class="cert-stat">
+                    <div class="cert-stat-val">{{ solved }}/{{ total }}</div>
+                    <div class="cert-stat-label">Flags Captured</div>
+                </div>
+                <div class="cert-stat">
+                    <div class="cert-stat-val">#{{ rank }}</div>
+                    <div class="cert-stat-label">Global Rank</div>
+                </div>
+                <div class="cert-stat">
+                    <div class="cert-stat-val">{{ level }}</div>
+                    <div class="cert-stat-label">Level Reached</div>
+                </div>
+            </div>
+
+            <div class="cert-badges">
+                <span class="cert-badge">✅ Web Security</span>
+                <span class="cert-badge">🔐 Cryptography</span>
+                <span class="cert-badge">🌍 Networking</span>
+                <span class="cert-badge">🧩 CTF Solver</span>
+                {% if solved >= 5  %}<span class="cert-badge">💀 CTF Hunter</span>{% endif %}
+                {% if xp >= 500    %}<span class="cert-badge">⚡ XP Master</span>{% endif %}
+                {% if solved >= 10 %}<span class="cert-badge">🔥 Elite Hacker</span>{% endif %}
+            </div>
+
+            <div class="cert-divider2"></div>
+
+            <div class="cert-footer">
+                <div class="cert-sign">
+                    <div class="cert-sign-line"></div>
+                    <div class="cert-sign-name">HACKQUEST SYSTEM</div>
+                    <div class="cert-sign-title">Automated Verification</div>
+                    <div class="cert-date">{{ date }}</div>
+                </div>
+                <div class="cert-seal">
+                    <div class="cert-seal-icon">🛡️</div>
+                    <div class="cert-seal-text">VERIFIED</div>
+                </div>
+                <div class="cert-sign">
+                    <div class="cert-sign-line"></div>
+                    <div class="cert-sign-name">MCA PROJECT</div>
+                    <div class="cert-sign-title">Academic Submission</div>
+                    <div class="cert-date">{{ date }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

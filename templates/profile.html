@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --green:#00ff9d; --cyan:#00e5ff; --red:#ff2d55; --yellow:#ffd60a; --bg:#020408; --card:#060d14; --border:#0a2a1f; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--green); font-family:'Share Tech Mono',monospace; padding:32px 24px; }
+        body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+        .wrapper { position:relative; z-index:1; max-width:780px; margin:0 auto; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:36px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+        .logo { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:3px; text-shadow:0 0 20px var(--green); }
+        .logo span { color:var(--cyan); }
+        .btn { padding:10px 20px; border-radius:8px; text-decoration:none; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; transition:all 0.2s; cursor:pointer; }
+        .btn-green { background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); color:var(--green); }
+        .btn-green:hover { background:rgba(0,255,157,0.2); border-color:var(--green); }
+
+        /* profile card */
+        .profile-top {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:16px; padding:32px;
+            display:grid; grid-template-columns:auto 1fr;
+            gap:28px; align-items:center; margin-bottom:24px;
+            animation:fadeUp 0.5s ease both;
+        }
+        .avatar-circle {
+            width:100px; height:100px; border-radius:50%;
+            background:linear-gradient(135deg,#00ff9d22,#00e5ff22);
+            border:2px solid var(--green);
+            display:flex; align-items:center; justify-content:center;
+            font-size:52px;
+            box-shadow:0 0 30px rgba(0,255,157,0.2);
+        }
+        .profile-name { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; color:#fff; margin-bottom:6px; }
+        .profile-bio { color:#446; font-size:13px; margin-bottom:14px; }
+        .badges { display:flex; gap:8px; flex-wrap:wrap; }
+        .badge { font-size:11px; padding:3px 12px; border-radius:20px; font-weight:bold; }
+        .b-green { background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); color:var(--green); }
+        .b-cyan  { background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); color:var(--cyan); }
+        .b-yellow{ background:rgba(255,214,10,0.1); border:1px solid rgba(255,214,10,0.3); color:var(--yellow); }
+
+        /* stats row */
+        .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+        .stat { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px; text-align:center; animation:fadeUp 0.5s ease both; transition:all 0.2s; }
+        .stat:hover { border-color:var(--green); transform:translateY(-3px); }
+        .stat-val { font-family:'Orbitron',monospace; font-size:24px; font-weight:900; color:var(--green); margin-bottom:4px; }
+        .stat-label { font-size:11px; color:#334; letter-spacing:1px; text-transform:uppercase; }
+
+        /* grid */
+        .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+        .panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px; animation:fadeUp 0.5s 0.2s ease both; }
+        .panel-title { font-size:11px; color:#555; letter-spacing:2px; text-transform:uppercase; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #0a1a10; }
+
+        /* edit form */
+        label { display:block; font-size:11px; color:#555; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; margin-top:16px; }
+        label:first-of-type { margin-top:0; }
+        input[type=text], textarea {
+            width:100%; background:#020408; border:1px solid var(--border);
+            border-radius:8px; padding:10px 14px;
+            color:var(--green); font-family:'Share Tech Mono',monospace;
+            font-size:13px; outline:none; resize:none;
+        }
+        input[type=text]:focus, textarea:focus { border-color:var(--green); }
+        .avatar-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:16px; }
+        .av-opt { font-size:24px; text-align:center; padding:8px; border-radius:8px; cursor:pointer; border:2px solid transparent; background:#020408; transition:all 0.2s; }
+        .av-opt:hover, .av-opt.selected { border-color:var(--green); background:rgba(0,255,157,0.1); }
+        .save-btn { width:100%; padding:12px; border-radius:8px; background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.4); color:var(--green); font-family:'Share Tech Mono',monospace; font-size:14px; font-weight:bold; cursor:pointer; margin-top:16px; transition:all 0.2s; letter-spacing:1px; }
+        .save-btn:hover { background:rgba(0,255,157,0.2); border-color:var(--green); }
+
+        /* solved list */
+        .solved-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #060d0a; font-size:13px; }
+        .solved-item:last-child { border-bottom:none; }
+        .diff-tag { font-size:10px; font-weight:bold; padding:2px 8px; border-radius:20px; }
+        .easy   { color:#00ff9d; background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); }
+        .medium { color:#ffd60a; background:rgba(255,214,10,0.1); border:1px solid rgba(255,214,10,0.3); }
+        .hard   { color:#ff2d55; background:rgba(255,45,85,0.1);  border:1px solid rgba(255,45,85,0.3); }
+
+        .msg { background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); border-radius:8px; padding:10px 14px; color:var(--green); font-size:13px; margin-bottom:16px; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span></div>
+        <a href="/dashboard" class="btn btn-green">← Dashboard</a>
+    </div>
+
+    <!-- PROFILE TOP -->
+    <div class="profile-top">
+        <div class="avatar-circle">{{ avatar }}</div>
+        <div>
+            <div class="profile-name">@{{ username }}</div>
+            <div class="profile-bio">{{ bio }}</div>
+            <div class="badges">
+                <span class="badge b-green">⚡ {{ xp }} XP</span>
+                <span class="badge b-cyan">🧩 {{ solved }}/{{ total }} Solved</span>
+                <span class="badge b-yellow">🏆 Rank #{{ rank }}</span>
+                {% if solved >= 10 %}<span class="badge b-green">🔥 Elite Hacker</span>{% endif %}
+                {% if solved >= 5  %}<span class="badge b-cyan">💀 CTF Hunter</span>{% endif %}
+                {% if xp >= 1000   %}<span class="badge b-yellow">⚡ XP Master</span>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats">
+        <div class="stat"><div class="stat-val" style="color:#00ff9d">{{ xp }}</div><div class="stat-label">Total XP</div></div>
+        <div class="stat"><div class="stat-val" style="color:#00e5ff">{{ solved }}</div><div class="stat-label">Flags Captured</div></div>
+        <div class="stat"><div class="stat-val" style="color:#ffd60a">#{{ rank }}</div><div class="stat-label">Global Rank</div></div>
+        <div class="stat"><div class="stat-val" style="color:#ff2d55">{{ ((xp // 500) + 1) }}</div><div class="stat-label">Current Level</div></div>
+    </div>
+
+    <div class="grid2">
+        <!-- EDIT PROFILE -->
+        <div class="panel">
+            <div class="panel-title">// edit profile</div>
+            {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+            <form method="POST">
+                <label>Choose Avatar</label>
+                <div class="avatar-grid">
+                    {% for em in ["😎","👾","🤖","💀","🐱","🦊","🐺","🐉","👻","🎭","🦅","🔥"] %}
+                    <div class="av-opt {% if em == avatar %}selected{% endif %}"
+                         onclick="selectAv(this,'{{ em }}')">{{ em }}</div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="avatar" id="avatarInput" value="{{ avatar }}">
+
+                <label>Bio</label>
+                <textarea name="bio" rows="3" maxlength="120" placeholder="Tell the world who you are...">{{ bio }}</textarea>
+
+                <button type="submit" class="save-btn">💾 SAVE PROFILE</button>
+            </form>
+        </div>
+
+        <!-- SOLVED CHALLENGES -->
+        <div class="panel">
+            <div class="panel-title">// captured flags ({{ solved }})</div>
+            {% if solved_challenges %}
+                {% for c in solved_challenges %}
+                <div class="solved-item">
+                    <div>
+                        <span style="margin-right:8px">{{ c.icon }}</span>
+                        <span style="color:#aaa">{{ c.title }}</span>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center">
+                        <span class="diff-tag {{ c.difficulty | lower }}">{{ c.difficulty }}</span>
+                        <span style="color:#00e5ff; font-size:12px">+{{ c.xp }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="color:#334; font-size:13px; padding:20px 0; text-align:center">
+                    No flags captured yet!<br>
+                    <a href="/challenges" style="color:var(--green); text-decoration:none">Start hacking →</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+function selectAv(el, val) {
+    document.querySelectorAll('.av-opt').forEach(a => a.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('avatarInput').value = val;
+}
+</script>
+</body>
+</html>

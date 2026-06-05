@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Flashcards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --green:#00ff9d; --cyan:#00e5ff; --red:#ff2d55; --yellow:#ffd60a; --bg:#020408; --card:#060d14; --border:#0a2a1f; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--green); font-family:'Share Tech Mono',monospace; min-height:100vh; padding:32px 24px; }
+        body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+        .wrapper { position:relative; z-index:1; max-width:780px; margin:0 auto; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:36px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+        .logo { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:3px; text-shadow:0 0 20px var(--green); }
+        .logo span { color:var(--cyan); }
+        .btn { padding:10px 20px; border-radius:8px; text-decoration:none; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); color:var(--green); transition:all 0.2s; }
+        .header { text-align:center; margin-bottom:36px; }
+        .header h2 { font-family:'Orbitron',monospace; font-size:22px; color:#fff; margin-bottom:8px; }
+        .header p { color:#334; font-size:13px; }
+        .progress-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+        .progress-text { font-size:12px; color:#555; }
+        .progress-bar { flex:1; margin:0 16px; background:#060d14; border-radius:20px; height:6px; border:1px solid var(--border); }
+        .progress-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,var(--green),var(--cyan)); transition:width 0.5s; }
+        .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px; justify-content:center; }
+        .tab { padding:7px 16px; border-radius:20px; cursor:pointer; font-size:12px; border:1px solid var(--border); color:#446; background:var(--card); transition:all 0.2s; font-family:'Share Tech Mono',monospace; }
+        .tab:hover, .tab.active { color:var(--green); border-color:rgba(0,255,157,0.4); background:rgba(0,255,157,0.08); }
+        .card-area { perspective:1200px; margin-bottom:28px; }
+        .flashcard { width:100%; height:280px; position:relative; cursor:pointer; transform-style:preserve-3d; transition:transform 0.6s cubic-bezier(0.4,0,0.2,1); }
+        .flashcard.flipped { transform:rotateY(180deg); }
+        .card-face { position:absolute; inset:0; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:36px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; backface-visibility:hidden; }
+        .card-back { transform:rotateY(180deg); background:#060d18; border-color:rgba(0,229,255,0.2); }
+        .card-front { border-color:rgba(0,255,157,0.2); }
+        .card-tag { font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:4px 14px; border-radius:20px; margin-bottom:20px; }
+        .tag-front { color:var(--green); background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); }
+        .tag-back  { color:var(--cyan);  background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); }
+        .card-icon { font-size:48px; margin-bottom:16px; }
+        .card-term { font-family:'Orbitron',monospace; font-size:24px; color:#fff; font-weight:700; margin-bottom:8px; }
+        .card-hint { color:#334; font-size:12px; }
+        .card-def  { color:#aaa; font-size:14px; line-height:1.8; }
+        .card-example { margin-top:16px; background:rgba(0,0,0,0.3); border-radius:8px; padding:12px 16px; font-size:12px; color:#446; border-left:2px solid var(--cyan); text-align:left; width:100%; }
+        .flip-hint { color:#1a3a2a; font-size:11px; margin-top:16px; }
+        .actions { display:flex; gap:12px; justify-content:center; margin-bottom:24px; }
+        .action-btn { flex:1; max-width:180px; padding:14px; border-radius:10px; cursor:pointer; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; transition:all 0.2s; letter-spacing:1px; }
+        .btn-skip { background:rgba(255,45,85,0.1);  border:1px solid rgba(255,45,85,0.3);  color:#ff2d55; }
+        .btn-got  { background:rgba(0,255,157,0.1);  border:1px solid rgba(0,255,157,0.3);  color:var(--green); }
+        .btn-skip:hover { background:rgba(255,45,85,0.2); }
+        .btn-got:hover  { background:rgba(0,255,157,0.2); }
+        .stats-row { display:flex; gap:12px; }
+        .mini-stat { flex:1; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; }
+        .mini-val { font-family:'Orbitron',monospace; font-size:20px; font-weight:900; }
+        .mini-label { font-size:10px; color:#334; letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+        .completed { text-align:center; padding:48px 32px; background:var(--card); border:1px solid rgba(0,255,157,0.3); border-radius:16px; display:none; }
+        .completed h3 { font-family:'Orbitron',monospace; font-size:24px; color:#fff; margin:16px 0 8px; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span></div>
+        <a href="/dashboard" class="btn">← Dashboard</a>
+    </div>
+    <div class="header">
+        <h2>🃏 FLASHCARDS</h2>
+        <p>// flip to reveal · learn cybersecurity concepts · track your progress</p>
+    </div>
+    <div class="tabs">
+        <div class="tab active" onclick="filterCards('all',this)">All</div>
+        <div class="tab" onclick="filterCards('web',this)">🌐 Web Security</div>
+        <div class="tab" onclick="filterCards('crypto',this)">🔐 Cryptography</div>
+        <div class="tab" onclick="filterCards('network',this)">🌍 Networking</div>
+        <div class="tab" onclick="filterCards('attack',this)">⚔️ Attack Types</div>
+        <div class="tab" onclick="filterCards('tools',this)">🛠️ Tools</div>
+    </div>
+    <div class="progress-row">
+        <span class="progress-text" id="progressText">Card 1 of 30</span>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <span class="progress-text" id="masteredText">0 mastered</span>
+    </div>
+    <div class="card-area">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+            <div class="card-face card-front">
+                <span class="card-tag tag-front">TERM</span>
+                <div class="card-icon" id="cardIcon">🔒</div>
+                <div class="card-term" id="cardTerm">Loading...</div>
+                <div class="card-hint" id="cardHint">click to reveal definition</div>
+                <div class="flip-hint">👆 tap to flip</div>
+            </div>
+            <div class="card-face card-back">
+                <span class="card-tag tag-back">DEFINITION</span>
+                <div class="card-def" id="cardDef">Definition here</div>
+                <div class="card-example" id="cardExample">Example here</div>
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="action-btn btn-skip" onclick="nextCard(false)">😕 Still Learning</button>
+        <button class="action-btn btn-got"  onclick="nextCard(true)">✅ Got It!</button>
+    </div>
+    <div class="stats-row">
+        <div class="mini-stat"><div class="mini-val" id="masteredCount" style="color:var(--green)">0</div><div class="mini-label">Mastered</div></div>
+        <div class="mini-stat"><div class="mini-val" id="learningCount" style="color:var(--yellow)">0</div><div class="mini-label">Learning</div></div>
+        <div class="mini-stat"><div class="mini-val" id="remainCount"   style="color:var(--cyan)">30</div><div class="mini-label">Remaining</div></div>
+    </div>
+    <div class="completed" id="completedScreen">
+        <div style="font-size:64px">🎉</div>
+        <h3>DECK COMPLETE!</h3>
+        <p style="color:#446; margin-bottom:24px">You have gone through all the cards!</p>
+        <button class="action-btn btn-got" style="max-width:200px;margin:0 auto" onclick="restartCards()">🔄 Restart Deck</button>
+    </div>
+</div>
+<script>
+var allCards = [
+    {cat:"web", icon:"💉", term:"SQL Injection", hint:"A web attack technique", def:"An attack where malicious SQL code is inserted into a query, allowing attackers to view, modify, or delete database data without authorization.", example:"Example: ' OR '1'='1 tricks the database into always returning true"},
+    {cat:"web", icon:"📜", term:"Cross-Site Scripting", hint:"Injects scripts into websites", def:"An attack where malicious JavaScript is injected into web pages viewed by other users, allowing cookie theft, session hijacking, or malware distribution.", example:"Example: script tag with document.cookie sent to attacker server"},
+    {cat:"web", icon:"🎭", term:"CSRF", hint:"Cross-Site Request Forgery", def:"An attack that tricks a logged-in user into unknowingly submitting a malicious request, exploiting the trust a website has in the user browser.", example:"Example: A hidden form on evil.com that transfers money from your bank"},
+    {cat:"web", icon:"📁", term:"Directory Traversal", hint:"Path manipulation attack", def:"An attack that exploits insufficient security validation to access files outside the web root directory using sequences like ../", example:"Example: https://site.com/file?name=../../etc/passwd"},
+    {cat:"web", icon:"🎫", term:"JWT Token", hint:"JSON Web Token", def:"A compact token used for authentication. Contains header, payload, and signature. Vulnerable to algorithm confusion attacks if not properly validated.", example:"Example: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiYWRtaW4ifQ.signature"},
+    {cat:"crypto", icon:"🔑", term:"Caesar Cipher", hint:"Ancient substitution cipher", def:"One of the simplest encryption techniques where each letter is shifted by a fixed number of positions in the alphabet. Easy to crack by brute force.", example:"Example: HELLO with shift 3 becomes KHOOR"},
+    {cat:"crypto", icon:"🧮", term:"MD5 Hash", hint:"Message Digest 5", def:"A widely used cryptographic hash function that produces a 128-bit hash value. Now considered broken for security purposes due to collision vulnerabilities.", example:"Example: password hashes to 5f4dcc3b5aa765d61d8327deb882cf99"},
+    {cat:"crypto", icon:"🔐", term:"AES Encryption", hint:"Advanced Encryption Standard", def:"A symmetric encryption algorithm used worldwide. Supports 128, 192, or 256-bit keys. Used in HTTPS, VPNs, file encryption and more.", example:"Example: AES-256 encrypts your HTTPS traffic to websites"},
+    {cat:"crypto", icon:"📦", term:"Base64 Encoding", hint:"NOT encryption!", def:"A binary-to-text encoding scheme that converts data into ASCII characters. It is NOT encryption — anyone can decode it instantly.", example:"Example: Hello becomes SGVsbG8= and is easily reversed"},
+    {cat:"crypto", icon:"🔏", term:"RSA Encryption", hint:"Asymmetric encryption", def:"A public-key encryption algorithm based on the difficulty of factoring large prime numbers. Uses public key to encrypt and private key to decrypt.", example:"Example: Used in HTTPS certificates and digital signatures"},
+    {cat:"crypto", icon:"🧂", term:"Salt", hint:"Random data added to hashing", def:"Random data added to a password before hashing to prevent rainbow table attacks. Each user gets a unique salt even with the same password.", example:"Example: password plus random salt gives unique hash every time"},
+    {cat:"network", icon:"🌐", term:"TCP/IP", hint:"Core internet protocol", def:"The fundamental communication protocol of the internet. TCP ensures reliable data delivery. IP handles addressing and routing of packets.", example:"Example: Every web request uses TCP/IP"},
+    {cat:"network", icon:"🦈", term:"Packet Sniffing", hint:"Intercepting network traffic", def:"The practice of capturing and analyzing data packets traveling over a network. Used by hackers to steal credentials.", example:"Example: Wireshark can capture HTTP traffic showing plain text passwords"},
+    {cat:"network", icon:"🔍", term:"Port Scanning", hint:"Discovering open ports", def:"The process of probing a server for open ports to identify running services. Used in reconnaissance phase of penetration testing.", example:"Example: nmap -sV 192.168.1.1 scans all ports on that IP"},
+    {cat:"network", icon:"🕸️", term:"ARP Spoofing", hint:"Man-in-the-middle technique", def:"An attack where the attacker sends fake ARP messages to link their MAC address with a legitimate IP, intercepting network traffic.", example:"Example: Attacker poisons ARP cache to become the gateway"},
+    {cat:"network", icon:"🧱", term:"Firewall", hint:"Network traffic filter", def:"A security system that monitors and controls incoming and outgoing network traffic based on predetermined security rules. First line of network defense.", example:"Example: Blocks all traffic except port 80 and 443"},
+    {cat:"attack", icon:"💪", term:"Brute Force Attack", hint:"Try every combination", def:"An attack that systematically tries every possible combination of passwords until the correct one is found. Slow but effective against weak passwords.", example:"Example: Trying admin with password, 123456, letmein, admin123"},
+    {cat:"attack", icon:"🌊", term:"DDoS Attack", hint:"Distributed Denial of Service", def:"An attack that overwhelms a server with massive traffic from multiple sources simultaneously, making it unavailable to legitimate users.", example:"Example: Botnet of 100000 infected computers all hitting one server"},
+    {cat:"attack", icon:"🎣", term:"Phishing", hint:"Social engineering via fake emails", def:"A social engineering attack using fake emails or websites that mimic trusted organizations to steal credentials or install malware.", example:"Example: Fake PayPal email asking you to verify your account"},
+    {cat:"attack", icon:"👿", term:"Ransomware", hint:"Malware that encrypts your files", def:"Malicious software that encrypts a victim files and demands payment usually in cryptocurrency for the decryption key.", example:"Example: WannaCry encrypted hospitals files and demanded Bitcoin"},
+    {cat:"attack", icon:"🐴", term:"Trojan Horse", hint:"Malware disguised as legit software", def:"Malware disguised as legitimate software that once installed allows unauthorized access or performs malicious actions without user knowledge.", example:"Example: Fake antivirus software that actually installs spyware"},
+    {cat:"tools", icon:"🗺️", term:"Nmap", hint:"Network Mapper", def:"The most popular open-source network scanner. Used to discover hosts, services, operating systems, and open ports on a network.", example:"Example: nmap -A -T4 192.168.1.0/24 scans entire local network"},
+    {cat:"tools", icon:"🦈", term:"Wireshark", hint:"Packet analyzer", def:"A free open-source packet capture and analysis tool. Captures all network traffic on an interface in real time. Essential for network security analysis.", example:"Example: Captures all packets on your network interface for analysis"},
+    {cat:"tools", icon:"🕷️", term:"Burp Suite", hint:"Web security testing tool", def:"An integrated platform for web application security testing. Includes proxy, scanner, intruder, and repeater tools for finding web vulnerabilities.", example:"Example: Intercept and modify HTTP requests to test for SQL injection"},
+    {cat:"tools", icon:"💥", term:"Metasploit", hint:"Penetration testing framework", def:"The world most used penetration testing framework. Contains hundreds of exploits, payloads, and auxiliary modules for testing system security.", example:"Example: use exploit/windows/smb/ms17_010_eternalblue"},
+    {cat:"tools", icon:"🔓", term:"John the Ripper", hint:"Password cracker", def:"A fast open-source password security auditing and password recovery tool. Supports hundreds of hash types and uses dictionary and brute force attacks.", example:"Example: john --wordlist=rockyou.txt hashes.txt"},
+    {cat:"tools", icon:"🐍", term:"Python for Hacking", hint:"Most used hacking language", def:"Python is the most popular language for cybersecurity scripting. Used to write exploits, automation tools, network scanners, and malware analysis scripts.", example:"Example: import socket; s=socket.socket(); s.connect(('target',80))"},
+    {cat:"tools", icon:"🐧", term:"Kali Linux", hint:"Penetration testing OS", def:"A Debian-based Linux distribution designed for digital forensics and penetration testing. Comes pre-installed with 600+ security tools.", example:"Example: Used by ethical hackers worldwide as their primary OS"}
+];
+
+var currentCards = allCards.slice();
+var currentIndex = 0;
+var mastered = 0;
+var learning = 0;
+var isFlipped = false;
+
+function filterCards(cat, el) {
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    currentCards = cat === 'all' ? allCards.slice() : allCards.filter(function(c) { return c.cat === cat; });
+    currentIndex = 0; mastered = 0; learning = 0; isFlipped = false;
+    document.getElementById('flashcard').classList.remove('flipped');
+    document.getElementById('completedScreen').style.display = 'none';
+    document.querySelector('.card-area').style.display = 'block';
+    document.querySelector('.actions').style.display = 'flex';
+    updateCard();
+    updateStats();
+}
+
+function updateCard() {
+    if (currentIndex >= currentCards.length) {
+        document.getElementById('completedScreen').style.display = 'block';
+        document.querySelector('.card-area').style.display = 'none';
+        document.querySelector('.actions').style.display = 'none';
+        return;
+    }
+    var c = currentCards[currentIndex];
+    document.getElementById('cardIcon').textContent  = c.icon;
+    document.getElementById('cardTerm').textContent  = c.term;
+    document.getElementById('cardHint').textContent  = c.hint;
+    document.getElementById('cardDef').textContent   = c.def;
+    document.getElementById('cardExample').textContent = c.example;
+    var pct = Math.floor(currentIndex / currentCards.length * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = 'Card ' + (currentIndex+1) + ' of ' + currentCards.length;
+    document.getElementById('masteredText').textContent  = mastered + ' mastered';
+}
+
+function flipCard() {
+    isFlipped = !isFlipped;
+    document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard(gotIt) {
+    if (gotIt) mastered++;
+    else learning++;
+    currentIndex++;
+    isFlipped = false;
+    document.getElementById('flashcard').classList.remove('flipped');
+    setTimeout(function() { updateCard(); updateStats(); }, 150);
+}
+
+function updateStats() {
+    document.getElementById('masteredCount').textContent = mastered;
+    document.getElementById('learningCount').textContent = learning;
+    document.getElementById('remainCount').textContent   = Math.max(0, currentCards.length - currentIndex);
+}
+
+function restartCards() {
+    currentIndex = 0; mastered = 0; learning = 0; isFlipped = false;
+    document.getElementById('completedScreen').style.display = 'none';
+    document.querySelector('.card-area').style.display = 'block';
+    document.querySelector('.actions').style.display = 'flex';
+    document.getElementById('flashcard').classList.remove('flipped');
+    updateCard(); updateStats();
+}
+
+updateCard();
+</script>
+</body>
+</html>

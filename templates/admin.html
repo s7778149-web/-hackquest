@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --green:#00ff9d; --cyan:#00e5ff; --red:#ff2d55; --yellow:#ffd60a; --bg:#020408; --card:#060d14; --border:#0a2a1f; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--green); font-family:'Share Tech Mono',monospace; padding:32px 24px; }
+        body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+        .wrapper { position:relative; z-index:1; max-width:1100px; margin:0 auto; animation:fadeUp 0.4s ease both; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:36px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+        .logo { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:3px; text-shadow:0 0 20px var(--green); }
+        .logo span { color:var(--cyan); }
+        .btn { padding:10px 20px; border-radius:8px; text-decoration:none; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); color:var(--green); }
+        h2 { font-family:'Orbitron',monospace; font-size:20px; color:#fff; margin-bottom:6px; }
+        .sub { color:#334; font-size:12px; margin-bottom:28px; }
+
+        /* stats */
+        .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:36px; }
+        .stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; text-align:center; }
+        .stat-val { font-family:'Orbitron',monospace; font-size:28px; font-weight:900; }
+        .stat-label { font-size:10px; color:#334; letter-spacing:2px; text-transform:uppercase; margin-top:6px; }
+
+        /* table */
+        .section-title { font-family:'Orbitron',monospace; font-size:14px; color:#fff; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+        .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:32px; overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; min-width:900px; }
+        th { background:#020408; color:#334; font-size:10px; letter-spacing:2px; text-transform:uppercase; padding:12px 18px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
+        td { padding:12px 18px; font-size:13px; border-bottom:1px solid #050d0a; color:#aaa; vertical-align:middle; }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:rgba(0,255,157,0.02); }
+        .rank-1 td:first-child { color:var(--yellow); }
+        .rank-2 td:first-child { color:#aaa; }
+        .rank-3 td:first-child { color:#cd7f32; }
+        .xp-val { color:var(--cyan); font-weight:bold; font-family:'Orbitron',monospace; }
+        .solved-val { color:var(--green); font-weight:bold; }
+        .bio-text { color:#668; font-size:12px; font-style:italic; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .solved-pills { display:flex; flex-wrap:wrap; gap:4px; max-width:200px; }
+        .pill { font-size:10px; padding:2px 8px; border-radius:20px; background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); color:var(--green); white-space:nowrap; }
+
+        /* action buttons */
+        .actions { display:flex; gap:6px; flex-wrap:wrap; }
+        .act-btn { font-size:10px; padding:4px 10px; border-radius:6px; text-decoration:none; font-family:'Share Tech Mono',monospace; font-weight:bold; cursor:pointer; border:none; transition:all 0.2s; white-space:nowrap; }
+        .btn-reset  { color:var(--yellow); background:rgba(255,214,10,0.1); border:1px solid rgba(255,214,10,0.3); }
+        .btn-delete { color:var(--red); background:rgba(255,45,85,0.1); border:1px solid rgba(255,45,85,0.3); }
+        .btn-addxp  { color:var(--green); background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); }
+        .btn-removexp { color:var(--cyan); background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); }
+        .btn-clear  { color:#aa88ff; background:rgba(170,136,255,0.1); border:1px solid rgba(170,136,255,0.3); }
+        .act-btn:hover { opacity:0.8; transform:translateY(-1px); }
+
+        /* badge */
+        .badge { font-size:10px; padding:2px 10px; border-radius:20px; color:var(--green); background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.2); }
+        .badge-red { color:var(--red); background:rgba(255,45,85,0.1); border-color:rgba(255,45,85,0.2); }
+        .badge-yellow { color:var(--yellow); background:rgba(255,214,10,0.1); border-color:rgba(255,214,10,0.2); }
+
+        /* modal confirm */
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; align-items:center; justify-content:center; }
+        .modal.show { display:flex; }
+        .modal-box { background:var(--card); border:1px solid rgba(255,45,85,0.4); border-radius:14px; padding:32px; max-width:380px; text-align:center; }
+        .modal-title { font-family:'Orbitron',monospace; font-size:16px; color:var(--red); margin-bottom:12px; }
+        .modal-msg { color:#aaa; font-size:13px; margin-bottom:24px; line-height:1.7; }
+        .modal-btns { display:flex; gap:12px; justify-content:center; }
+        .modal-yes { padding:10px 24px; border-radius:8px; background:rgba(255,45,85,0.15); border:1px solid rgba(255,45,85,0.4); color:var(--red); font-family:'Share Tech Mono',monospace; cursor:pointer; font-size:13px; text-decoration:none; }
+        .modal-no  { padding:10px 24px; border-radius:8px; background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); color:var(--green); font-family:'Share Tech Mono',monospace; cursor:pointer; font-size:13px; }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span> <span style="font-size:14px;color:#334;letter-spacing:2px">// ADMIN</span></div>
+        <a href="/dashboard" class="btn">← Dashboard</a>
+    </div>
+
+    <h2>🛡️ ADMIN PANEL</h2>
+    <p class="sub">// full control · delete users · reset passwords · manage xp · view all data</p>
+
+    <!-- STATS -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-val" style="color:var(--green)">{{ users|length }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color:var(--cyan)">{{ solved_rows|length }}</div>
+            <div class="stat-label">Flags Captured</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color:var(--yellow)">{{ challenges|length }}</div>
+            <div class="stat-label">Challenges</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color:var(--red)">
+                {% if users %}{{ users[0][1] }}{% else %}0{% endif %}
+            </div>
+            <div class="stat-label">Top XP Score</div>
+        </div>
+    </div>
+
+    <!-- USERS TABLE -->
+    <div class="section-title">👥 ALL USERS — {{ users|length }} registered</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Avatar</th>
+                    <th>Username</th>
+                    <th>Bio</th>
+                    <th>XP</th>
+                    <th>Level</th>
+                    <th>Solved</th>
+                    <th>Challenges</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                {% set u_solved = solved_rows | selectattr('0', 'equalto', u[0]) | list %}
+                <tr class="rank-{{ loop.index }}">
+                    <td style="font-family:'Orbitron',monospace; font-weight:900">
+                        {% if loop.index == 1 %}🥇
+                        {% elif loop.index == 2 %}🥈
+                        {% elif loop.index == 3 %}🥉
+                        {% else %}#{{ loop.index }}{% endif %}
+                    </td>
+                    <td style="font-size:24px">{{ u[2] }}</td>
+                    <td style="color:#fff; font-weight:bold">{{ u[0] }}</td>
+                    <td><div class="bio-text" title="{{ u[3] }}">{{ u[3] if u[3] else '—' }}</div></td>
+                    <td><span class="xp-val">{{ u[1] }}</span></td>
+                    <td><span class="badge">LVL {{ (u[1]//500)+1 }}</span></td>
+                    <td><span class="solved-val">{{ u_solved|length }}/{{ challenges|length }}</span></td>
+                    <td>
+                        <div class="solved-pills">
+                            {% for row in u_solved %}
+                                {% for ch in challenges if ch.id == row[1] %}
+                                    <span class="pill">{{ ch.icon }} {{ ch.title }}</span>
+                                {% endfor %}
+                            {% endfor %}
+                            {% if u_solved|length == 0 %}
+                                <span style="color:#334; font-size:11px">none yet</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="/admin/addxp/{{ u[0] }}/100" class="act-btn btn-addxp" title="Add 100 XP">+XP</a>
+                            <a href="/admin/removexp/{{ u[0] }}/100" class="act-btn btn-removexp" title="Remove 100 XP">-XP</a>
+                            <a href="/admin/reset/{{ u[0] }}" class="act-btn btn-reset" title="Reset password to hackquest123">🔑 Reset</a>
+                            <a href="/admin/clearsolved/{{ u[0] }}" class="act-btn btn-clear" onclick="return confirm('Clear all solved challenges for {{ u[0] }}?')" title="Clear solved challenges">🗑 Clr</a>
+                            <a href="/admin/delete/{{ u[0] }}" class="act-btn btn-delete" onclick="return confirm('DELETE user {{ u[0] }}? This cannot be undone!')" title="Delete user">❌ Del</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if users|length == 0 %}
+                <tr><td colspan="9" style="text-align:center; color:#334; padding:40px">No users registered yet</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SOLVED TABLE -->
+    <div class="section-title">🚩 ALL FLAGS CAPTURED — {{ solved_rows|length }} total</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Challenge</th>
+                    <th>Category</th>
+                    <th>Difficulty</th>
+                    <th>XP Earned</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in solved_rows %}
+                {% for ch in challenges if ch.id == row[1] %}
+                <tr>
+                    <td style="color:#334">{{ loop.index }}</td>
+                    <td style="color:#fff">{{ row[0] }}</td>
+                    <td>{{ ch.icon }} {{ ch.title }}</td>
+                    <td><span class="badge">{{ ch.category }}</span></td>
+                    <td>
+                        {% if ch.difficulty == 'Easy' %}<span class="badge">Easy</span>
+                        {% elif ch.difficulty == 'Medium' %}<span class="badge badge-yellow">Medium</span>
+                        {% else %}<span class="badge badge-red">Hard</span>{% endif %}
+                    </td>
+                    <td><span class="xp-val">+{{ ch.xp }} XP</span></td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+                {% if solved_rows|length == 0 %}
+                <tr><td colspan="6" style="text-align:center; color:#334; padding:40px">No flags captured yet</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

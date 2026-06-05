@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #00ff9d;
+            --cyan: #00e5ff;
+            --red: #ff2d55;
+            --yellow: #ffd60a;
+            --bg: #020408;
+            --card: #060d14;
+            --border: #0a2a1f;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--green);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,255,157,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,157,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px var(--green);
+        }
+        .logo span { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
+        .status-dot { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .welcome { margin-bottom: 36px; animation: fadeUp 0.6s ease both; }
+        .welcome-label { font-size: 11px; color: #333; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
+        .welcome-name { font-family: 'Orbitron', monospace; font-size: 36px; font-weight: 900; color: #fff; text-shadow: 0 0 30px rgba(0,255,157,0.3); }
+        .welcome-name .at { color: var(--green); }
+        .welcome-sub { color: #2a5a3a; font-size: 13px; margin-top: 6px; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .stat {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 18px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.6s ease both;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+        .stat:hover { border-color: var(--green); transform: translateY(-3px); }
+        .stat::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent, #00ff9d), transparent);
+        }
+        .stat:nth-child(1) { --accent:#00ff9d; animation-delay:0.1s; }
+        .stat:nth-child(2) { --accent:#00e5ff; animation-delay:0.2s; }
+        .stat:nth-child(3) { --accent:#ffd60a; animation-delay:0.3s; }
+        .stat:nth-child(4) { --accent:#ff2d55; animation-delay:0.4s; }
+        .stat-icon { font-size: 24px; margin-bottom: 12px; }
+        .stat-val {
+            font-family: 'Orbitron', monospace;
+            font-size: 28px; font-weight: 900;
+            color: var(--accent, var(--green));
+            text-shadow: 0 0 12px var(--accent, var(--green));
+            line-height: 1; margin-bottom: 6px;
+        }
+        .stat-label { font-size: 11px; color: #334; letter-spacing: 1px; text-transform: uppercase; }
+
+        .xp-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s 0.3s ease both;
+        }
+        .xp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .xp-title { font-size: 12px; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+        .xp-level {
+            font-family: 'Orbitron', monospace;
+            font-size: 13px; color: var(--green);
+            background: rgba(0,255,157,0.1);
+            border: 1px solid rgba(0,255,157,0.3);
+            padding: 3px 12px; border-radius: 20px;
+        }
+        .xp-bar-bg { background: #0a0a0a; border-radius: 20px; height: 10px; overflow: hidden; border: 1px solid #111; }
+        .xp-bar-fill {
+            height: 100%; border-radius: 20px;
+            background: linear-gradient(90deg, var(--green), var(--cyan));
+            box-shadow: 0 0 12px rgba(0,255,157,0.6);
+            transition: width 1.5s cubic-bezier(0.4,0,0.2,1);
+            width: 0%;
+        }
+        .xp-nums { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: #333; }
+
+        /* ── 4 NAV CARDS ── */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .nav-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 20px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.6s ease both;
+        }
+        .nav-card:nth-child(1) { animation-delay:0.2s; }
+        .nav-card:nth-child(2) { animation-delay:0.3s; }
+        .nav-card:nth-child(3) { animation-delay:0.4s; }
+        .nav-card:nth-child(4) { animation-delay:0.5s; }
+        .nav-card:hover { transform: translateY(-4px); border-color: var(--c, var(--green)); }
+        .nav-card-icon { font-size: 36px; margin-bottom: 12px; display: block; }
+        .nav-card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px; font-weight: 700;
+            color: #fff; margin-bottom: 6px; letter-spacing: 1px;
+        }
+        .nav-card-sub { font-size: 11px; color: #334; }
+        .c1 { --c:#00ff9d; }
+        .c2 { --c:#00e5ff; }
+        .c3 { --c:#aa88ff; }
+        .c4 { --c:#ff2d55; }
+
+        .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 22px;
+            animation: fadeUp 0.6s 0.4s ease both;
+        }
+        .panel-title {
+            font-size: 11px; color: #555;
+            letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 18px; padding-bottom: 12px;
+            border-bottom: 1px solid #0a1a10;
+        }
+        .activity-item {
+            display: flex; justify-content: space-between;
+            align-items: center; padding: 10px 0;
+            border-bottom: 1px solid #060d0a; font-size: 13px;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .act-badge { font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 20px; margin-right: 8px; }
+        .act-solved { background: rgba(0,255,157,0.15); color: var(--green); border: 1px solid rgba(0,255,157,0.3); }
+        .act-quiz   { background: rgba(0,229,255,0.15); color: var(--cyan);  border: 1px solid rgba(0,229,255,0.3); }
+        .act-time   { color: #2a3a2a; font-size: 11px; }
+        .act-xp     { color: var(--green); font-size: 12px; font-weight: bold; }
+
+        .skill-row { margin-bottom: 16px; }
+        .skill-top { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: #aaa; }
+        .skill-pct { color: var(--c2, var(--green)); }
+        .skill-bar-bg { background: #060d08; border-radius: 20px; height: 5px; }
+        .skill-bar-fill {
+            height: 100%; border-radius: 20px;
+            background: linear-gradient(90deg, var(--c2, var(--green)), var(--c3, var(--cyan)));
+            box-shadow: 0 0 6px var(--c2, var(--green));
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        .logout-btn {
+            display: block; text-align: center; margin-top: 20px;
+            padding: 12px; border-radius: 8px;
+            background: rgba(255,45,85,0.08);
+            border: 1px solid rgba(255,45,85,0.2);
+            color: #553; text-decoration: none;
+            font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+            transition: all 0.2s;
+            animation: fadeUp 0.6s 0.5s ease both;
+        }
+        .logout-btn:hover { background: rgba(255,45,85,0.15); border-color: var(--red); color: var(--red); }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span></div>
+        <div class="status-dot">
+            <div class="dot"></div>
+            SYSTEM ONLINE
+        </div>
+    </div>
+
+    <!-- WELCOME -->
+    <div class="welcome">
+        <div class="welcome-label">// authenticated user</div>
+        <div class="welcome-name"><span class="at">@</span>{{ username }}</div>
+        <div class="welcome-sub">Welcome back, hacker. Your mission continues.</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-val" style="--accent:#00ff9d">{{ xp }}</div>
+            <div class="stat-label">Total XP</div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon">🧩</div>
+            <div class="stat-val" style="--accent:#00e5ff">{{ solved }}/{{ total }}</div>
+            <div class="stat-label">Flags Captured</div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-val" style="--accent:#ffd60a">#{{ rank }}</div>
+            <div class="stat-label">Global Rank</div>
+        </div>
+        <div class="stat">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-val" style="--accent:#ff2d55">{{ (xp // 500) + 1 }}</div>
+            <div class="stat-label">Current Level</div>
+        </div>
+    </div>
+
+    <!-- XP BAR -->
+    <div class="xp-section">
+        <div class="xp-top">
+            <span class="xp-title">// experience progress</span>
+            <span class="xp-level">LVL {{ (xp // 500) + 1 }}</span>
+        </div>
+        <div class="xp-bar-bg">
+            <div class="xp-bar-fill" id="xpBar" data-pct="{{ ((xp % 500) / 500 * 100) | int }}"></div>
+        </div>
+        <div class="xp-nums">
+            <span>{{ xp % 500 }} XP</span>
+            <span>{{ 500 - (xp % 500) }} XP to next level</span>
+        </div>
+    </div>
+
+    <!-- 4 NAV CARDS -->
+   <!-- NAV CARDS -->
+    <div class="nav-grid" style="grid-template-columns:repeat(4,1fr)">
+        <a href="/challenges" class="nav-card c1">
+            <span class="nav-card-icon">🧩</span>
+            <div class="nav-card-title">CHALLENGES</div>
+            <div class="nav-card-sub">Capture The Flags</div>
+        </a>
+        <a href="/quiz" class="nav-card c2">
+            <span class="nav-card-icon">🎮</span>
+            <div class="nav-card-title">QUIZ BATTLE</div>
+            <div class="nav-card-sub">Test your knowledge</div>
+        </a>
+        <a href="/flashcards" class="nav-card" style="--c:#ffd60a">
+            <span class="nav-card-icon">🃏</span>
+            <div class="nav-card-title">FLASHCARDS</div>
+            <div class="nav-card-sub">Learn concepts</div>
+        </a>
+        <a href="/roadmap" class="nav-card" style="--c:#aa88ff">
+            <span class="nav-card-icon">🗺️</span>
+            <div class="nav-card-title">ROADMAP</div>
+            <div class="nav-card-sub">Your journey</div>
+        </a>
+    </div>
+    <div class="nav-grid" style="grid-template-columns:repeat(4,1fr); margin-top:0">
+        <a href="/dictionary" class="nav-card" style="--c:#00e5ff">
+            <span class="nav-card-icon">📖</span>
+            <div class="nav-card-title">DICTIONARY</div>
+            <div class="nav-card-sub">40+ cyber terms</div>
+        </a>
+        <a href="/leaderboard" class="nav-card c3">
+            <span class="nav-card-icon">🏆</span>
+            <div class="nav-card-title">LEADERBOARD</div>
+            <div class="nav-card-sub">Global rankings</div>
+        </a>
+        <a href="/profile" class="nav-card c4">
+            <span class="nav-card-icon">👤</span>
+            <div class="nav-card-title">PROFILE</div>
+            <div class="nav-card-sub">Stats & badges</div>
+        </a>
+        <a href="/certificate" class="nav-card" style="--c:#ffd60a">
+            <span class="nav-card-icon">🏅</span>
+            <div class="nav-card-title">CERTIFICATE</div>
+            <div class="nav-card-sub">Print & submit</div>
+        </a>
+    </div>
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+        <div class="panel">
+            <div class="panel-title">// recent activity</div>
+            <div class="activity-item">
+                <div><span class="act-badge act-solved">SOLVED</span><span style="color:#aaa">SQL Injection 101</span></div>
+                <div style="text-align:right"><div class="act-xp">+100 XP</div><div class="act-time">2h ago</div></div>
+            </div>
+            <div class="activity-item">
+                <div><span class="act-badge act-quiz">QUIZ</span><span style="color:#aaa">Web Security · 4/5</span></div>
+                <div style="text-align:right"><div class="act-xp">+200 XP</div><div class="act-time">1d ago</div></div>
+            </div>
+            <div class="activity-item">
+                <div><span class="act-badge act-solved">SOLVED</span><span style="color:#aaa">Base64 Decode</span></div>
+                <div style="text-align:right"><div class="act-xp">+100 XP</div><div class="act-time">2d ago</div></div>
+            </div>
+            <div class="activity-item">
+                <div><span class="act-badge act-quiz">QUIZ</span><span style="color:#aaa">Cryptography · 3/5</span></div>
+                <div style="text-align:right"><div class="act-xp">+150 XP</div><div class="act-time">3d ago</div></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">// skill matrix</div>
+            <div class="skill-row">
+                <div class="skill-top"><span>Web Hacking</span><span class="skill-pct" style="--c2:#00ff9d">75%</span></div>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="75" style="--c2:#00ff9d;--c3:#00e5ff"></div></div>
+            </div>
+            <div class="skill-row">
+                <div class="skill-top"><span>Cryptography</span><span class="skill-pct" style="--c2:#00e5ff">50%</span></div>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="50" style="--c2:#00e5ff;--c3:#aa88ff"></div></div>
+            </div>
+            <div class="skill-row">
+                <div class="skill-top"><span>Networking</span><span class="skill-pct" style="--c2:#ffd60a">40%</span></div>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="40" style="--c2:#ffd60a;--c3:#ff9d00"></div></div>
+            </div>
+            <div class="skill-row">
+                <div class="skill-top"><span>Binary Exploit</span><span class="skill-pct" style="--c2:#ff2d55">20%</span></div>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="20" style="--c2:#ff2d55;--c3:#ff6b8a"></div></div>
+            </div>
+            <div class="skill-row">
+                <div class="skill-top"><span>Forensics</span><span class="skill-pct" style="--c2:#aa88ff">30%</span></div>
+                <div class="skill-bar-bg"><div class="skill-bar-fill" data-w="30" style="--c2:#aa88ff;--c3:#00e5ff"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT -->
+    <a href="/logout" class="logout-btn">⏻ &nbsp; logout</a>
+
+</div>
+<script>
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('xpBar').style.width =
+                document.getElementById('xpBar').dataset.pct + '%';
+            document.querySelectorAll('.skill-bar-fill').forEach(b => {
+                b.style.width = b.dataset.w + '%';
+            });
+        }, 300);
+    });
+</script>
+</body>
+</html>

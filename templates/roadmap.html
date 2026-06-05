@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HackQuest — Roadmap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --green:#00ff9d; --cyan:#00e5ff; --red:#ff2d55; --yellow:#ffd60a; --bg:#020408; --card:#060d14; --border:#0a2a1f; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--green); font-family:'Share Tech Mono',monospace; padding:32px 24px; }
+        body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
+        .wrapper { position:relative; z-index:1; max-width:780px; margin:0 auto; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:36px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+        .logo { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; letter-spacing:3px; text-shadow:0 0 20px var(--green); }
+        .logo span { color:var(--cyan); }
+        .btn { padding:10px 20px; border-radius:8px; text-decoration:none; font-family:'Share Tech Mono',monospace; font-size:13px; font-weight:bold; background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); color:var(--green); transition:all 0.2s; }
+
+        h2 { font-family:'Orbitron',monospace; font-size:22px; color:#fff; margin-bottom:8px; }
+        .sub { color:#334; font-size:13px; margin-bottom:36px; }
+
+        /* XP progress */
+        .xp-bar-section { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 24px; margin-bottom:36px; }
+        .xp-row { display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; color:#555; }
+        .xp-bg { background:#020408; border-radius:20px; height:8px; }
+        .xp-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,var(--green),var(--cyan)); box-shadow:0 0 10px rgba(0,255,157,0.5); transition:width 1s; }
+
+        /* timeline */
+        .timeline { position:relative; padding-left:60px; }
+        .timeline::before { content:''; position:absolute; left:24px; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--green),#0a2a1f); }
+
+        .stage { position:relative; margin-bottom:28px; animation:fadeUp 0.5s ease both; }
+        .stage:nth-child(1){animation-delay:0.1s}
+        .stage:nth-child(2){animation-delay:0.2s}
+        .stage:nth-child(3){animation-delay:0.3s}
+        .stage:nth-child(4){animation-delay:0.4s}
+        .stage:nth-child(5){animation-delay:0.5s}
+        .stage:nth-child(6){animation-delay:0.6s}
+
+        .stage-dot {
+            position:absolute; left:-48px; top:20px;
+            width:44px; height:44px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; font-weight:900;
+            border:2px solid var(--border);
+            background:var(--card);
+            transition:all 0.3s;
+        }
+        .stage.done   .stage-dot { background:rgba(0,255,157,0.15); border-color:var(--green); box-shadow:0 0 16px rgba(0,255,157,0.3); }
+        .stage.current .stage-dot { background:rgba(0,229,255,0.15); border-color:var(--cyan); box-shadow:0 0 20px rgba(0,229,255,0.4); animation:glow 2s infinite; }
+        .stage.locked  .stage-dot { opacity:0.4; }
+
+        @keyframes glow { 0%,100%{box-shadow:0 0 16px rgba(0,229,255,0.3)} 50%{box-shadow:0 0 28px rgba(0,229,255,0.6)} }
+
+        .stage-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 24px; transition:all 0.3s; }
+        .stage.done    .stage-card { border-color:rgba(0,255,157,0.2); }
+        .stage.current .stage-card { border-color:rgba(0,229,255,0.3); background:#060d18; }
+        .stage.locked  .stage-card { opacity:0.5; }
+
+        .stage-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .stage-title { font-family:'Orbitron',monospace; font-size:16px; color:#fff; }
+        .stage.locked .stage-title { color:#334; }
+        .stage-badge { font-size:10px; font-weight:bold; padding:3px 12px; border-radius:20px; }
+        .badge-done    { color:var(--green); background:rgba(0,255,157,0.1); border:1px solid rgba(0,255,157,0.3); }
+        .badge-current { color:var(--cyan);  background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); }
+        .badge-locked  { color:#334; background:#060d14; border:1px solid var(--border); }
+
+        .stage-xp { font-size:11px; color:#446; margin-bottom:14px; }
+        .topics { display:flex; flex-wrap:wrap; gap:8px; }
+        .topic { font-size:11px; padding:4px 12px; border-radius:6px; }
+        .topic-done    { color:var(--green); background:rgba(0,255,157,0.08); border:1px solid rgba(0,255,157,0.2); }
+        .topic-current { color:#fff; background:rgba(0,229,255,0.08); border:1px solid rgba(0,229,255,0.2); }
+        .topic-locked  { color:#334; background:#040a08; border:1px solid #0a1a0a; }
+
+        .current-label { display:inline-block; color:var(--cyan); font-size:11px; margin-top:12px; border-top:1px solid rgba(0,229,255,0.15); padding-top:10px; width:100%; }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="topbar">
+        <div class="logo">HACK<span>QUEST</span></div>
+        <a href="/dashboard" class="btn">← Dashboard</a>
+    </div>
+
+    <h2>🗺️ LEARNING ROADMAP</h2>
+    <p class="sub">// your structured path from beginner to elite hacker</p>
+
+    <!-- XP PROGRESS -->
+    <div class="xp-bar-section">
+        <div class="xp-row">
+            <span>// overall progress</span>
+            <span style="color:var(--green)">{{ xp }} XP · Level {{ (xp//500)+1 }}</span>
+        </div>
+        <div class="xp-bg">
+            <div class="xp-fill" style="width:{{ [xp/3000*100,100]|min|int }}%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#334">
+            <span>0 XP</span><span>3000 XP (Elite)</span>
+        </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="timeline">
+
+        {% set stages = [
+            {"title":"Recon Rookie","icon":"🐣","xp_need":0,"topics":["Linux Terminal","Networking Basics","How the Internet Works","IP Addresses & DNS","Basic Security Concepts"],"desc":"Start your journey by understanding how systems communicate."},
+            {"title":"Web Warrior","icon":"🌐","xp_need":200,"topics":["HTTP/HTTPS Protocol","SQL Injection","Cross-Site Scripting","Burp Suite Basics","OWASP Top 10"],"desc":"Learn to identify and exploit the most common web vulnerabilities."},
+            {"title":"Crypto Cracker","icon":"🔐","xp_need":500,"topics":["Caesar & Vigenere Ciphers","Base64 & Hex Encoding","MD5 & SHA Hashing","RSA Basics","Password Cracking"],"desc":"Understand how encryption works — and how to break weak implementations."},
+            {"title":"Network Ninja","icon":"🌍","xp_need":900,"topics":["Port Scanning with Nmap","Wireshark & Packet Analysis","ARP Spoofing","Firewall Bypass","VPN & Proxy Techniques"],"desc":"Master network reconnaissance and traffic analysis techniques."},
+            {"title":"Binary Beast","icon":"💣","xp_need":1500,"topics":["Assembly Language Basics","Buffer Overflow","Shellcode Writing","GDB Debugger","Reverse Engineering"],"desc":"Dive into low-level exploitation — the hardest and most powerful skill."},
+            {"title":"Elite Hacker","icon":"👾","xp_need":2500,"topics":["Advanced Web Exploits","Privilege Escalation","Active Directory Attacks","Red Team Operations","CTF Competition Strategy"],"desc":"You have mastered the fundamentals. Now compete and contribute."},
+        ] %}
+
+        {% for s in stages %}
+            {% if xp >= s.xp_need and (loop.last or xp < stages[loop.index].xp_need) %}
+                {% set state = "current" %}
+            {% elif xp >= s.xp_need %}
+                {% set state = "done" %}
+            {% else %}
+                {% set state = "locked" %}
+            {% endif %}
+
+        <div class="stage {{ state }}">
+            <div class="stage-dot">{{ s.icon }}</div>
+            <div class="stage-card">
+                <div class="stage-header">
+                    <div class="stage-title">{{ s.title }}</div>
+                    {% if state == "done" %}
+                        <span class="stage-badge badge-done">✅ COMPLETED</span>
+                    {% elif state == "current" %}
+                        <span class="stage-badge badge-current">📍 CURRENT</span>
+                    {% else %}
+                        <span class="stage-badge badge-locked">🔒 {{ s.xp_need }} XP needed</span>
+                    {% endif %}
+                </div>
+                <div class="stage-xp">// requires {{ s.xp_need }} XP · {{ s.desc }}</div>
+                <div class="topics">
+                    {% for t in s.topics %}
+                        <span class="topic topic-{{ state }}">{{ t }}</span>
+                    {% endfor %}
+                </div>
+                {% if state == "current" %}
+                    <div class="current-label">🎯 You are here — keep solving challenges to progress!</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>
